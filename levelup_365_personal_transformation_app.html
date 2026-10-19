@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LevelUp 365 - Personal Transformation App</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6F61C0',
+                        'primary-light': '#A594F9',
+                        'primary-soft': '#CDC1FF',
+                        bglight: '#F7F7FC',
+                        cardlight: '#FFFFFF',
+                        textdark: '#29263D',
+                        textmuted: '#6C688A',
+                        bgdark: '#161522',
+                        carddark: '#201E33',
+                        textlight: '#E6E4FA'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars & smooth transitions */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CDC1FF; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #201E33; }
+        body { -webkit-tap-highlight-color: transparent; user-select: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Ring animation fallback */
+        circle { transition: stroke-dashoffset 0.5s ease-in-out; }
+    </style>
+</head>
+<body class="bg-bglight dark:bg-bgdark text-textdark dark:text-textlight font-sans min-h-screen pb-24 transition-colors duration-200">
+
+    <!-- TOP HEADER -->
+    <header class="sticky top-0 z-30 bg-cardlight/90 dark:bg-carddark/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg shadow-md shadow-primary/20">
+                365
+            </div>
+            <div>
+                <h1 class="font-bold text-base leading-tight">LevelUp 365</h1>
+                <p id="header-date-display" class="text-xs text-textmuted dark:text-gray-400">Day 1 • Mon, Oct 19</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <!-- Date Picker Jump -->
+            <button onclick="openDatePicker()" class="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 active:scale-95 transition">
+                <i class="ph ph-calendar-blank text-lg"></i>
+            </button>
+            <!-- Theme Toggle -->
+            <button onclick="toggleTheme()" class="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 active:scale-95 transition">
+                <i id="theme-icon" class="ph ph-moon text-lg"></i>
+            </button>
+            <!-- Settings / Backup -->
+            <button onclick="openModal('settings-modal')" class="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 active:scale-95 transition">
+                <i class="ph ph-gear text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- DATE BAR PICKER (HIDDEN BY DEFAULT) -->
+    <div id="date-picker-bar" class="hidden bg-primary/10 border-b border-primary/20 px-4 py-2 flex items-center justify-between text-sm">
+        <button onclick="shiftDate(-1)" class="flex items-center space-x-1 text-primary font-medium hover:underline">
+            <i class="ph ph-caret-left"></i><span>Prev Day</span>
+        </button>
+        <input type="date" id="global-date-input" onchange="onDateChanged(this.value)" class="bg-cardlight dark:bg-carddark border border-gray-300 dark:border-gray-700 rounded-lg px-2 py-1 text-xs text-center font-semibold">
+        <button onclick="shiftDate(1)" class="flex items-center space-x-1 text-primary font-medium hover:underline">
+            <span>Next Day</span><i class="ph ph-caret-right"></i>
+        </button>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-md mx-auto px-4 pt-4 space-y-6">
+
+        <!-- TAB 1: HOME / DASHBOARD -->
+        <section id="tab-home" class="tab-content space-y-5">
+            <!-- MOTIVATION CARD -->
+            <div class="bg-gradient-to-r from-primary to-primary-light rounded-2xl p-4 text-white shadow-lg shadow-primary/20 relative overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs uppercase tracking-wider font-semibold opacity-80">Daily Wisdom</span>
+                    <span id="journey-day-badge" class="bg-white/20 text-xs px-2.5 py-0.5 rounded-full font-bold">Day 1 / 365</span>
+                </div>
+                <p id="quote-text" class="text-sm font-medium italic leading-relaxed">"Small daily improvements over time lead to stunning results."</p>
+                <!-- 365 Progress Bar -->
+                <div class="mt-4">
+                    <div class="flex justify-between text-xs mb-1 opacity-90">
+                        <span>Year Transformation Progress</span>
+                        <span id="transformation-pct">0.3%</span>
+                    </div>
+                    <div class="w-full bg-black/20 h-2 rounded-full overflow-hidden">
+                        <div id="transformation-progress-bar" class="bg-white h-full transition-all duration-500" style="width: 0.3%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OVERALL DAILY SCORE RING -->
+            <div class="bg-cardlight dark:bg-carddark p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800/80 flex items-center justify-between">
+                <div>
+                    <h2 class="text-xs font-semibold text-textmuted uppercase tracking-wider">Today's Execution Score</h2>
+                    <div id="daily-score-text" class="text-3xl font-extrabold mt-1 text-primary">0%</div>
+                    <p id="daily-score-sub" class="text-xs text-textmuted mt-1">Keep pushing your targets!</p>
+                </div>
+                <div class="relative w-20 h-20 flex items-center justify-center">
+                    <svg class="w-20 h-20 transform -rotate-90">
+                        <circle cx="40" cy="40" r="32" stroke="currentColor" stroke-width="8" class="text-gray-200 dark:text-gray-800" fill="transparent"/>
+                        <circle id="score-ring" cx="40" cy="40" r="32" stroke="currentColor" stroke-width="8" class="text-primary" fill="transparent" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="201"/>
+                    </svg>
+                    <i class="ph ph-trophy text-xl text-primary absolute"></i>
+                </div>
+            </div>
+
+            <!-- CORE METRICS GRID -->
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Calories Card -->
+                <div onclick="switchTab('nutrition')" class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm cursor-pointer hover:border-primary/40 transition">
+                    <div class="flex items-center justify-between text-textmuted mb-2">
+                        <span class="text-xs font-semibold">CALORIES</span>
+                        <i class="ph ph-fire text-amber-500 text-lg"></i>
+                    </div>
+                    <div class="text-xl font-bold"><span id="dash-cal-consumed">0</span> <span class="text-xs text-textmuted font-normal">/ <span id="dash-cal-target">2000</span> kcal</span></div>
+                    <div class="w-full bg-gray-100 dark:bg-gray-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div id="dash-cal-bar" class="bg-amber-500 h-full w-0 transition-all"></div>
+                    </div>
+                </div>
+
+                <!-- Water Card -->
+                <div class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div class="flex items-center justify-between text-textmuted mb-2">
+                        <span class="text-xs font-semibold">WATER</span>
+                        <i class="ph ph-drop text-blue-500 text-lg"></i>
+                    </div>
+                    <div class="text-xl font-bold"><span id="dash-water-val">0</span> <span class="text-xs text-textmuted font-normal">/ 3000 ml</span></div>
+                    <div class="flex items-center justify-between mt-2">
+                        <button onclick="addWater(250)" class="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold px-2.5 py-1 rounded-lg active:scale-95 transition">+250ml</button>
+                        <button onclick="addWater(500)" class="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold px-2.5 py-1 rounded-lg active:scale-95 transition">+500ml</button>
+                    </div>
+                </div>
+
+                <!-- Workout Card -->
+                <div onclick="switchTab('fitness')" class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm cursor-pointer hover:border-primary/40 transition">
+                    <div class="flex items-center justify-between text-textmuted mb-2">
+                        <span class="text-xs font-semibold">WORKOUT</span>
+                        <i class="ph ph-barbell text-emerald-500 text-lg"></i>
+                    </div>
+                    <div id="dash-workout-status" class="text-base font-bold text-gray-500">Not Logged</div>
+                    <p id="dash-workout-time" class="text-xs text-textmuted mt-1">Tap to open logger</p>
+                </div>
+
+                <!-- Speaking / Skill Card -->
+                <div onclick="switchTab('growth')" class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm cursor-pointer hover:border-primary/40 transition">
+                    <div class="flex items-center justify-between text-textmuted mb-2">
+                        <span class="text-xs font-semibold">SPEAKING</span>
+                        <i class="ph ph-microphone text-purple-500 text-lg"></i>
+                    </div>
+                    <div class="text-xl font-bold"><span id="dash-speaking-min">0</span> <span class="text-xs text-textmuted font-normal">mins</span></div>
+                    <p class="text-xs text-textmuted mt-1">Goal: 15 mins daily</p>
+                </div>
+            </div>
+
+            <!-- HABITS QUICK LIST -->
+            <div class="bg-cardlight dark:bg-carddark p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-sm flex items-center gap-2"><i class="ph ph-check-circle text-primary text-lg"></i> Today's Key Habits</h3>
+                    <button onclick="switchTab('growth')" class="text-xs text-primary font-semibold hover:underline">Manage</button>
+                </div>
+                <div id="dash-habits-container" class="space-y-2">
+                    <!-- Dynamic check items -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: NUTRITION & FOOD TRACKER -->
+        <section id="tab-nutrition" class="tab-content hidden space-y-5">
+            <!-- NATURAL LANGUAGE MEAL INPUT -->
+            <div class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3">
+                <h3 class="font-bold text-sm flex items-center gap-2">
+                    <i class="ph ph-lightning text-amber-500 text-lg"></i> Fast Natural Language Log
+                </h3>
+                <p class="text-xs text-textmuted">Example: <span class="italic text-gray-500">"2 roti, 150g chicken salan, 200g dahi, 1 cup sugar-free chai"</span></p>
+                <div class="flex gap-2">
+                    <textarea id="nl-food-input" rows="2" class="w-full text-xs p-3 rounded-xl bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 focus:outline-none focus:border-primary" placeholder="Type meals naturally..."></textarea>
+                </div>
+                <div class="flex justify-between items-center">
+                    <button onclick="openManualFoodModal()" class="text-xs text-primary font-semibold hover:underline">+ Search Database</button>
+                    <button onclick="parseAndLogNaturalFood()" class="bg-primary text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-md shadow-primary/20 active:scale-95 transition flex items-center gap-1">
+                        <i class="ph ph-plus"></i> Auto Log
+                    </button>
+                </div>
+            </div>
+
+            <!-- NUTRITION SUMMARY BREAKDOWN -->
+            <div class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3">
+                <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-2">
+                    <div>
+                        <span class="text-xs text-textmuted uppercase tracking-wider font-semibold">Calories Consumed</span>
+                        <div class="text-2xl font-black text-textdark dark:text-textlight"><span id="nut-total-cal">0</span> / <span id="nut-target-cal">2000</span> <span class="text-xs text-textmuted font-normal">kcal</span></div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-textmuted uppercase tracking-wider font-semibold">Remaining</span>
+                        <div id="nut-remaining-cal" class="text-xl font-bold text-emerald-500">2000 kcal</div>
+                    </div>
+                </div>
+
+                <!-- MACROS GRID -->
+                <div class="grid grid-cols-4 gap-2 text-center pt-1">
+                    <div class="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-xl">
+                        <div class="text-[10px] text-textmuted font-semibold">PROTEIN</div>
+                        <div class="text-sm font-bold text-primary"><span id="macro-protein">0</span>g</div>
+                        <div class="text-[9px] text-gray-400">Target: <span id="target-protein">120</span>g</div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-xl">
+                        <div class="text-[10px] text-textmuted font-semibold">CARBS</div>
+                        <div class="text-sm font-bold text-amber-500"><span id="macro-carbs">0</span>g</div>
+                        <div class="text-[9px] text-gray-400">Target: <span id="target-carbs">220</span>g</div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-xl">
+                        <div class="text-[10px] text-textmuted font-semibold">FAT</div>
+                        <div class="text-sm font-bold text-rose-500"><span id="macro-fat">0</span>g</div>
+                        <div class="text-[9px] text-gray-400">Target: <span id="target-fat">60</span>g</div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-xl">
+                        <div class="text-[10px] text-textmuted font-semibold">FIBER</div>
+                        <div class="text-sm font-bold text-emerald-500"><span id="macro-fiber">0</span>g</div>
+                        <div class="text-[9px] text-gray-400">Target: 30g</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOGGED MEALS BY CATEGORY -->
+            <div id="logged-meals-list" class="space-y-3">
+                <!-- Breakfast, Lunch, Dinner, Snacks cards appended here -->
+            </div>
+        </section>
+
+        <!-- TAB 3: FITNESS & BODY TRANSFORMATION -->
+        <section id="tab-fitness" class="tab-content hidden space-y-5">
+            <!-- WEIGHT & BODY LOG HEADER -->
+            <div class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-sm">Body Metrics</h3>
+                        <p class="text-xs text-textmuted">Target Weight: <span id="fit-target-weight">70</span> kg</p>
+                    </div>
+                    <button onclick="openModal('log-weight-modal')" class="bg-primary text-white text-xs font-semibold px-3 py-1.5 rounded-xl shadow-sm hover:bg-primary/90 transition">
+                        + Log Weight / Waist
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+                    <div>
+                        <span class="text-xs text-textmuted">Current Weight</span>
+                        <div class="text-xl font-bold"><span id="fit-current-weight">--</span> kg</div>
+                    </div>
+                    <div>
+                        <span class="text-xs text-textmuted">Waist Size</span>
+                        <div class="text-xl font-bold"><span id="fit-current-waist">--</span> in</div>
+                    </div>
+                </div>
+
+                <!-- Canvas Weight Trend Chart -->
+                <div class="pt-2">
+                    <div class="flex justify-between text-xs text-textmuted mb-1">
+                        <span>Weight History Trend</span>
+                        <span id="fit-weight-diff" class="text-emerald-500 font-semibold">0 kg change</span>
+                    </div>
+                    <canvas id="weightChart" class="w-full h-32 bg-gray-50 dark:bg-gray-800/40 rounded-xl"></canvas>
+                </div>
+            </div>
+
+            <!-- WORKOUT LOGGER -->
+            <div class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-sm flex items-center gap-2">
+                        <i class="ph ph-barbell text-emerald-500 text-lg"></i> Daily Workout Sessions
+                    </h3>
+                    <button onclick="openModal('add-workout-modal')" class="text-xs text-primary font-semibold hover:underline">+ Log Exercise</button>
+                </div>
+
+                <div id="workout-exercises-list" class="space-y-2">
+                    <!-- Exercise logs inserted here -->
+                </div>
+            </div>
+
+            <!-- SLEEP & RECOVERY -->
+            <div class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3">
+                <h3 class="font-bold text-sm flex items-center gap-2">
+                    <i class="ph ph-moon-stars text-indigo-500 text-lg"></i> Sleep & Recovery Tracker
+                </h3>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center space-x-2">
+                        <input type="number" id="sleep-hours-input" step="0.5" placeholder="7.5" class="w-16 p-2 text-center text-sm font-bold bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <span class="text-xs font-medium text-textmuted">Hours Slept</span>
+                    </div>
+                    <button onclick="saveSleepLog()" class="bg-gray-100 dark:bg-gray-800 text-xs font-semibold px-4 py-2 rounded-xl text-textdark dark:text-textlight hover:bg-gray-200 transition">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: GROWTH HUB (HABITS, SPEAKING, SKILLS, ROADMAP) -->
+        <section id="tab-growth" class="tab-content hidden space-y-5">
+            <!-- GROWTH SUB-NAV PILLS -->
+            <div class="flex space-x-1 p-1 bg-gray-200/60 dark:bg-gray-800 rounded-xl text-xs font-medium no-scrollbar overflow-x-auto">
+                <button onclick="switchGrowthSubTab('habits')" id="growth-subnav-habits" class="subtab-btn flex-1 py-1.5 px-3 rounded-lg bg-cardlight dark:bg-carddark font-bold shadow-sm text-primary">Habits</button>
+                <button onclick="switchGrowthSubTab('speaking')" id="growth-subnav-speaking" class="subtab-btn flex-1 py-1.5 px-3 rounded-lg text-textmuted">Speaking</button>
+                <button onclick="switchGrowthSubTab('skills')" id="growth-subnav-skills" class="subtab-btn flex-1 py-1.5 px-3 rounded-lg text-textmuted">Skills</button>
+                <button onclick="switchGrowthSubTab('roadmap')" id="growth-subnav-roadmap" class="subtab-btn flex-1 py-1.5 px-3 rounded-lg text-textmuted">365 Roadmap</button>
+            </div>
+
+            <!-- SUB TAB 1: HABITS -->
+            <div id="growth-habits" class="growth-tab-content space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-sm">Habit Tracker & Streaks</h3>
+                    <button onclick="openModal('add-habit-modal')" class="text-xs text-primary font-semibold hover:underline">+ New Habit</button>
+                </div>
+                <div id="habits-full-list" class="space-y-3">
+                    <!-- Rendered habits -->
+                </div>
+            </div>
+
+            <!-- SUB TAB 2: PUBLIC SPEAKING COACH -->
+            <div id="growth-speaking" class="growth-tab-content hidden space-y-4">
+                <!-- RANDOM TOPIC GENERATOR CARD -->
+                <div class="bg-gradient-to-br from-purple-900 to-primary p-4 rounded-2xl text-white shadow-md space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">Speech Practice Topic</span>
+                        <button onclick="generateSpeechTopic()" class="text-xs bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-lg transition flex items-center gap-1">
+                            <i class="ph ph-arrows-clockwise"></i> New Topic
+                        </button>
+                    </div>
+                    <p id="speech-topic-text" class="text-sm font-semibold leading-snug">"Introduce yourself and explain your biggest motivation for this 365-day transformation."</p>
+                    <div class="flex gap-2 pt-1">
+                        <button onclick="startSpeakingChallenge(1)" class="flex-1 bg-white text-primary text-xs font-bold py-1.5 rounded-lg active:scale-95 transition">1 Min</button>
+                        <button onclick="startSpeakingChallenge(3)" class="flex-1 bg-white text-primary text-xs font-bold py-1.5 rounded-lg active:scale-95 transition">3 Mins</button>
+                        <button onclick="startSpeakingChallenge(5)" class="flex-1 bg-white text-primary text-xs font-bold py-1.5 rounded-lg active:scale-95 transition">5 Mins</button>
+                    </div>
+                </div>
+
+                <!-- LIVE CHALLENGE TIMER (SHOWS WHEN ACTIVE) -->
+                <div id="speaking-timer-card" class="hidden bg-cardlight dark:bg-carddark p-4 rounded-2xl border-2 border-primary shadow-lg space-y-3 text-center">
+                    <span class="text-xs text-textmuted uppercase tracking-wider font-semibold">Live Session Timer</span>
+                    <div id="speech-timer-display" class="text-4xl font-black text-primary font-mono">01:00</div>
+                    
+                    <!-- Filler word counter -->
+                    <div class="bg-gray-50 dark:bg-gray-800/60 p-3 rounded-xl space-y-2">
+                        <span class="text-xs font-semibold text-textmuted">Filler Word Counter (Um / Ah / Like)</span>
+                        <div class="flex items-center justify-center space-x-4">
+                            <span id="filler-count" class="text-2xl font-bold text-rose-500">0</span>
+                            <button onclick="incrementFiller()" class="bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-300 font-bold px-3 py-1 rounded-lg text-xs active:scale-95 transition">+1 Filler</button>
+                        </div>
+                    </div>
+
+                    <button onclick="finishSpeakingChallenge()" class="w-full bg-primary text-white text-xs font-bold py-2 rounded-xl shadow-md">Complete & Self-Evaluate</button>
+                </div>
+
+                <!-- MONTHLY ROADMAP STAGE STACK -->
+                <div class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3">
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-textmuted">12-Month Public Speaking Curriculum</h4>
+                    <div id="speaking-curriculum-list" class="space-y-2 text-xs">
+                        <!-- Render 12 stage items -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB TAB 3: LEARNING & SKILLS -->
+            <div id="growth-skills" class="growth-tab-content hidden space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-sm">Professional Skills Development</h3>
+                    <button onclick="openModal('add-skill-modal')" class="text-xs text-primary font-semibold hover:underline">+ New Skill</button>
+                </div>
+                <div id="skills-list" class="space-y-3">
+                    <!-- Skills progress inserted here -->
+                </div>
+            </div>
+
+            <!-- SUB TAB 4: 365-DAY ROADMAP & HEATMAP -->
+            <div id="growth-roadmap" class="growth-tab-content hidden space-y-4">
+                <div class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3">
+                    <h3 class="font-bold text-sm">365-Day Transformation Heatmap</h3>
+                    <p class="text-xs text-textmuted">Visual activity log across your 365-day commitment.</p>
+                    <div id="heatmap-grid" class="grid grid-cols-12 gap-1 pt-2">
+                        <!-- 365 mini boxes simulated grid -->
+                    </div>
+                </div>
+
+                <!-- MONTHLY MILESTONES -->
+                <div class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3">
+                    <h3 class="font-bold text-sm">Monthly Target Milestones</h3>
+                    <div id="monthly-milestones-list" class="space-y-2">
+                        <!-- Dynamic milestones -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: REPORTS & INSIGHTS -->
+        <section id="tab-progress" class="tab-content hidden space-y-5">
+            <div class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3">
+                <h3 class="font-bold text-sm">Consistency & Execution Summary</h3>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-gray-50 dark:bg-gray-800/40 p-3 rounded-xl">
+                        <div class="text-xs text-textmuted font-semibold">ACTIVE STREAK</div>
+                        <div id="report-streak" class="text-2xl font-black text-primary">1 Day</div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/40 p-3 rounded-xl">
+                        <div class="text-xs text-textmuted font-semibold">SPEAKING MINS</div>
+                        <div id="report-speaking-total" class="text-2xl font-black text-purple-500">0 Mins</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXPORT & BACKUP CONTROLS -->
+            <div class="bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3">
+                <h3 class="font-bold text-sm">Data Backup & Export</h3>
+                <p class="text-xs text-textmuted">Your data is stored completely offline on this device. Create regular backups or export CSV spreadsheets.</p>
+                
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="exportJSONBackup()" class="bg-gray-100 dark:bg-gray-800 text-textdark dark:text-textlight text-xs font-semibold py-2 rounded-xl flex items-center justify-center gap-1.5 hover:bg-gray-200 transition">
+                        <i class="ph ph-download-simple"></i> Backup JSON
+                    </button>
+                    <label class="bg-gray-100 dark:bg-gray-800 text-textdark dark:text-textlight text-xs font-semibold py-2 rounded-xl flex items-center justify-center gap-1.5 hover:bg-gray-200 transition cursor-pointer">
+                        <i class="ph ph-upload-simple"></i> Restore JSON
+                        <input type="file" onchange="importJSONBackup(event)" accept=".json" class="hidden">
+                    </label>
+                </div>
+
+                <button onclick="exportNutritionCSV()" class="w-full border border-gray-200 dark:border-gray-700 text-xs font-semibold py-2 rounded-xl flex items-center justify-center gap-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                    <i class="ph ph-file-csv text-emerald-500"></i> Export Nutrition & Workout CSV
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <nav class="fixed bottom-0 left-0 right-0 z-30 bg-cardlight/95 dark:bg-carddark/95 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 max-w-md mx-auto">
+        <div class="flex justify-around items-center h-16">
+            <button onclick="switchTab('home')" id="nav-home" class="nav-btn flex flex-col items-center justify-center w-full h-full text-primary">
+                <i class="ph ph-house text-xl"></i>
+                <span class="text-[10px] font-semibold mt-0.5">Home</span>
+            </button>
+            <button onclick="switchTab('nutrition')" id="nav-nutrition" class="nav-btn flex flex-col items-center justify-center w-full h-full text-textmuted">
+                <i class="ph ph-bowl-food text-xl"></i>
+                <span class="text-[10px] font-semibold mt-0.5">Nutrition</span>
+            </button>
+            <button onclick="switchTab('fitness')" id="nav-fitness" class="nav-btn flex flex-col items-center justify-center w-full h-full text-textmuted">
+                <i class="ph ph-barbell text-xl"></i>
+                <span class="text-[10px] font-semibold mt-0.5">Fitness</span>
+            </button>
+            <button onclick="switchTab('growth')" id="nav-growth" class="nav-btn flex flex-col items-center justify-center w-full h-full text-textmuted">
+                <i class="ph ph-trend-up text-xl"></i>
+                <span class="text-[10px] font-semibold mt-0.5">Growth</span>
+            </button>
+            <button onclick="switchTab('progress')" id="nav-progress" class="nav-btn flex flex-col items-center justify-center w-full h-full text-textmuted">
+                <i class="ph ph-chart-line-up text-xl"></i>
+                <span class="text-[10px] font-semibold mt-0.5">Progress</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MODAL 1: MANUAL FOOD DATABASE SEARCH -->
+    <div id="food-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-cardlight dark:bg-carddark w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base">South Asian Food Database</h3>
+                <button onclick="closeModal('food-modal')" class="text-gray-400 hover:text-gray-600"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <input type="text" id="food-search-query" onkeyup="searchFoodDatabase()" placeholder="Search roti, chicken salan, biryani, dahi..." class="w-full p-2.5 text-xs bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none">
+            <div id="food-search-results" class="overflow-y-auto space-y-2 flex-1 pr-1">
+                <!-- Search matches listed here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: LOG WEIGHT / BODY METRICS -->
+    <div id="log-weight-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-cardlight dark:bg-carddark w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base">Log Body Measurements</h3>
+                <button onclick="closeModal('log-weight-modal')" class="text-gray-400 hover:text-gray-600"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-medium mb-1">Body Weight (kg)</label>
+                    <input type="number" step="0.1" id="input-weight-val" placeholder="75.5" class="w-full p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                </div>
+                <div>
+                    <label class="block font-medium mb-1">Waist Measurement (inches)</label>
+                    <input type="number" step="0.5" id="input-waist-val" placeholder="34.0" class="w-full p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                </div>
+            </div>
+            <button onclick="saveWeightLog()" class="w-full bg-primary text-white text-xs font-bold py-2.5 rounded-xl shadow-md">Save Measurements</button>
+        </div>
+    </div>
+
+    <!-- MODAL 3: ADD WORKOUT EXERCISE -->
+    <div id="add-workout-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-cardlight dark:bg-carddark w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base">Log Exercise Activity</h3>
+                <button onclick="closeModal('add-workout-modal')" class="text-gray-400 hover:text-gray-600"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-medium mb-1">Exercise Name</label>
+                    <input type="text" id="ex-name" placeholder="Pushups, Squats, Running..." class="w-full p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block font-medium mb-1">Sets</label>
+                        <input type="number" id="ex-sets" placeholder="3" class="w-full p-2 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Reps</label>
+                        <input type="number" id="ex-reps" placeholder="12" class="w-full p-2 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Weight (kg)</label>
+                        <input type="number" id="ex-weight" placeholder="0" class="w-full p-2 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
+                    </div>
+                </div>
+            </div>
+            <button onclick="saveExerciseLog()" class="w-full bg-primary text-white text-xs font-bold py-2.5 rounded-xl shadow-md">Add Exercise</button>
+        </div>
+    </div>
+
+    <!-- MODAL 4: ADD HABIT -->
+    <div id="add-habit-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-cardlight dark:bg-carddark w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base">Create Custom Habit</h3>
+                <button onclick="closeModal('add-habit-modal')" class="text-gray-400 hover:text-gray-600"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-medium mb-1">Habit Title</label>
+                    <input type="text" id="habit-title-input" placeholder="Read 20 pages, Practice Public Speaking..." class="w-full p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                </div>
+            </div>
+            <button onclick="saveNewHabit()" class="w-full bg-primary text-white text-xs font-bold py-2.5 rounded-xl shadow-md">Create Habit</button>
+        </div>
+    </div>
+
+    <!-- MODAL 5: ADD SKILL -->
+    <div id="add-skill-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-cardlight dark:bg-carddark w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base">Add Professional Skill Target</h3>
+                <button onclick="closeModal('add-skill-modal')" class="text-gray-400 hover:text-gray-600"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-medium mb-1">Skill Name</label>
+                    <input type="text" id="skill-title-input" placeholder="UI/UX Design, Public Speaking..." class="w-full p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                </div>
+                <div>
+                    <label class="block font-medium mb-1">Target Hours in 365 Days</label>
+                    <input type="number" id="skill-target-hours" placeholder="100" class="w-full p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                </div>
+            </div>
+            <button onclick="saveNewSkill()" class="w-full bg-primary text-white text-xs font-bold py-2.5 rounded-xl shadow-md">Add Skill Target</button>
+        </div>
+    </div>
+
+    <!-- MODAL 6: PROFILE SETTINGS -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-cardlight dark:bg-carddark w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base">Profile & Transformation Goals</h3>
+                <button onclick="closeModal('settings-modal')" class="text-gray-400 hover:text-gray-600"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-medium mb-1">Daily Calorie Target (kcal)</label>
+                    <input type="number" id="settings-cal-target" class="w-full p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                </div>
+                <div>
+                    <label class="block font-medium mb-1">Daily Protein Target (g)</label>
+                    <input type="number" id="settings-protein-target" class="w-full p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                </div>
+                <div>
+                    <label class="block font-medium mb-1">Target Weight Goal (kg)</label>
+                    <input type="number" id="settings-target-weight" class="w-full p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                </div>
+            </div>
+            <button onclick="saveUserSettings()" class="w-full bg-primary text-white text-xs font-bold py-2.5 rounded-xl shadow-md">Update Profile</button>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none flex flex-col gap-2"></div>
+
+    <!-- JAVASCRIPT LOGIC ENGINE -->
+    <script>
+        /* ------------------------------------------------------------------
+           1. LOCAL DATABASE & OFFLINE ENGINE
+           ------------------------------------------------------------------ */
+        const DB_KEY = 'levelup365_master_db_v1';
+        let currentDateStr = new Date().toISOString().split('T')[0];
+
+        // Default initial app state
+        let appState = {
+            startDate: currentDateStr,
+            profile: {
+                name: 'User',
+                age: 25,
+                height: 175,
+                currentWeight: 75,
+                targetWeight: 70,
+                dailyCalorieTarget: 2000,
+                dailyProteinTarget: 120,
+                dailyCarbsTarget: 220,
+                dailyFatTarget: 60
+            },
+            habits: [
+                { id: 'h1', title: 'Wake up on time', streak: 0 },
+                { id: 'h2', title: 'Complete Workout Session', streak: 0 },
+                { id: 'h3', title: 'Follow Nutrition Targets', streak: 0 },
+                { id: 'h4', title: 'Practice Public Speaking 15 mins', streak: 0 },
+                { id: 'h5', title: 'Read 20 Mins / Skill Growth', streak: 0 }
+            ],
+            skills: [
+                { id: 's1', title: 'Public Speaking Confidence', targetHours: 100, loggedMins: 0 },
+                { id: 's2', title: 'Professional Communication', targetHours: 50, loggedMins: 0 }
+            ],
+            logs: {
+                // Keyed by YYYY-MM-DD
+            }
+        };
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(DB_KEY);
+                if (saved) {
+                    appState = JSON.parse(saved);
+                } else {
+                    saveState();
+                }
+            } catch(e) {
+                console.error('Error loading DB state:', e);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(DB_KEY, JSON.stringify(appState));
+            } catch(e) {
+                console.error('Error saving DB state:', e);
+            }
+        }
+
+        function getDayLog(dateStr) {
+            if (!appState.logs[dateStr]) {
+                appState.logs[dateStr] = {
+                    meals: [],
+                    water: 0,
+                    workout: [],
+                    weight: null,
+                    waist: null,
+                    sleep: null,
+                    speakingMins: 0,
+                    speakingFillers: 0,
+                    habitsCompleted: {}
+                };
+            }
+            return appState.logs[dateStr];
+        }
+
+        /* ------------------------------------------------------------------
+           2. SOUTH ASIAN & INTERNATIONAL FOOD DATABASE (100+ ITEMS)
+           ------------------------------------------------------------------ */
+        const FOOD_DATABASE = [
+            { id: 'f1', name: 'Roti / Chapati (Wheat)', unit: 'piece', cal: 120, p: 3.5, c: 24, f: 0.5, fiber: 3 },
+            { id: 'f2', name: 'Paratha (Oil/Ghee)', unit: 'piece', cal: 290, p: 4.5, c: 32, f: 16, fiber: 2.5 },
+            { id: 'f3', name: 'Chicken Salan / Curry', unit: '100g', cal: 165, p: 18, c: 3, f: 9, fiber: 0.5 },
+            { id: 'f4', name: 'Plain Dahi / Yogurt', unit: '100g', cal: 60, p: 3.5, c: 4.7, f: 3.3, fiber: 0 },
+            { id: 'f5', name: 'Sugar-Free Chai', unit: 'cup', cal: 35, p: 2, c: 3, f: 1.5, fiber: 0 },
+            { id: 'f6', name: 'Sweet Chai (1 tsp sugar)', unit: 'cup', cal: 75, p: 2, c: 11, f: 1.5, fiber: 0 },
+            { id: 'f7', name: 'Chicken Biryani', unit: 'plate (300g)', cal: 480, p: 22, c: 58, f: 18, fiber: 2 },
+            { id: 'f8', name: 'Boiled Egg', unit: 'piece', cal: 78, p: 6.3, c: 0.6, f: 5.3, fiber: 0 },
+            { id: 'f9', name: 'Fried Egg (1 tsp oil)', unit: 'piece', cal: 110, p: 6.3, c: 0.6, f: 9, fiber: 0 },
+            { id: 'f10', name: 'Daal Chana / Moong Curry', unit: '100g', cal: 130, p: 7, c: 18, f: 3.5, fiber: 4 },
+            { id: 'f11', name: 'White Rice (Cooked)', unit: 'cup (150g)', cal: 205, p: 4.2, c: 45, f: 0.4, fiber: 0.6 },
+            { id: 'f12', name: 'Beef Karahi', unit: '100g', cal: 240, p: 20, c: 2, f: 16, fiber: 0 },
+            { id: 'f13', name: 'Haleem', unit: 'plate (250g)', cal: 350, p: 22, c: 38, f: 12, fiber: 6 },
+            { id: 'f14', name: 'Apple', unit: 'medium piece', cal: 95, p: 0.5, c: 25, f: 0.3, fiber: 4.4 },
+            { id: 'f15', name: 'Banana', unit: 'medium piece', cal: 105, p: 1.3, c: 27, f: 0.3, fiber: 3.1 },
+            { id: 'f16', name: 'Almonds', unit: '10 pieces', cal: 70, p: 2.5, c: 2.5, f: 6, fiber: 1.5 },
+            { id: 'f17', name: 'Whey Protein Scoop', unit: 'scoop (30g)', cal: 120, p: 24, c: 2, f: 1.5, fiber: 0 }
+        ];
+
+        /* ------------------------------------------------------------------
+           3. NATURAL LANGUAGE FOOD PARSER (OFFLINE REGEX)
+           ------------------------------------------------------------------ */
+        function parseNaturalLanguageFood(text) {
+            const items = text.split(',');
+            const parsedResults = [];
+
+            items.forEach(rawItem => {
+                const str = rawItem.trim().toLowerCase();
+                if (!str) return;
+
+                // Match number prefix e.g. "2 roti" or "150g chicken"
+                const matchQty = str.match(/^([\d.]+)\s*(g|ml|cup|piece|tbsp|tsp)?\s+(.*)$/);
+                let qty = 1;
+                let unit = 'piece';
+                let queryStr = str;
+
+                if (matchQty) {
+                    qty = parseFloat(matchQty[1]) || 1;
+                    if (matchQty[2]) unit = matchQty[2];
+                    queryStr = matchQty[3];
+                }
+
+                // Fuzzy match against database
+                const found = FOOD_DATABASE.find(f => 
+                    queryStr.includes(f.name.toLowerCase().split(' ')[0]) || 
+                    f.name.toLowerCase().includes(queryStr)
+                );
+
+                if (found) {
+                    let multiplier = qty;
+                    if (unit === 'g' && found.unit.includes('100g')) multiplier = qty / 100;
+                    
+                    parsedResults.push({
+                        name: found.name,
+                        qty: qty,
+                        unit: unit,
+                        cal: Math.round(found.cal * multiplier),
+                        p: Math.round(found.p * multiplier),
+                        c: Math.round(found.c * multiplier),
+                        f: Math.round(found.f * multiplier),
+                        fiber: Math.round((found.fiber || 0) * multiplier)
+                    });
+                } else {
+                    // Fallback generic estimate if not strictly matched
+                    parsedResults.push({
+                        name: queryStr.charAt(0).toUpperCase() + queryStr.slice(1),
+                        qty: qty,
+                        unit: unit,
+                        cal: Math.round(150 * qty),
+                        p: Math.round(5 * qty),
+                        c: Math.round(20 * qty),
+                        f: Math.round(5 * qty),
+                        fiber: 1
+                    });
+                }
+            });
+
+            return parsedResults;
+        }
+
+        /* ------------------------------------------------------------------
+           4. UI NAVIGATION & TAB MANAGEMENT
+           ------------------------------------------------------------------ */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.replace('text-primary', 'text-textmuted'));
+
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            const targetNav = document.getElementById(`nav-${tabId}`);
+            
+            if (targetTab) targetTab.classList.remove('hidden');
+            if (targetNav) targetNav.classList.replace('text-textmuted', 'text-primary');
+
+            if (tabId === 'fitness') renderWeightChart();
+            if (tabId === 'growth') render365Heatmap();
+        }
+
+        function switchGrowthSubTab(subId) {
+            document.querySelectorAll('.growth-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.subtab-btn').forEach(el => {
+                el.classList.remove('bg-cardlight', 'dark:bg-carddark', 'font-bold', 'shadow-sm', 'text-primary');
+                el.classList.add('text-textmuted');
+            });
+
+            const targetSub = document.getElementById(`growth-${subId}`);
+            const targetBtn = document.getElementById(`growth-subnav-${subId}`);
+
+            if (targetSub) targetSub.classList.remove('hidden');
+            if (targetBtn) {
+                targetBtn.classList.add('bg-cardlight', 'dark:bg-carddark', 'font-bold', 'shadow-sm', 'text-primary');
+                targetBtn.classList.remove('text-textmuted');
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            document.getElementById('theme-icon').className = isDark ? 'ph ph-sun text-lg' : 'ph ph-moon text-lg';
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'bg-primary text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-lg transition-all duration-300 transform translate-y-2 opacity-0';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        /* ------------------------------------------------------------------
+           5. RENDER FUNCTIONS & CORE CALCULATIONS
+           ------------------------------------------------------------------ */
+        function renderAll() {
+            const log = getDayLog(currentDateStr);
+            
+            // Header display
+            const options = { weekday: 'short', month: 'short', day: 'numeric' };
+            const formattedDate = new Date(currentDateStr).toLocaleDateString('en-US', options);
+            document.getElementById('header-date-display').innerText = `${formattedDate}`;
+            document.getElementById('global-date-input').value = currentDateStr;
+
+            // Compute totals
+            let totalCal = 0, totalP = 0, totalC = 0, totalF = 0, totalFiber = 0;
+            log.meals.forEach(m => {
+                totalCal += m.cal;
+                totalP += m.p;
+                totalC += m.c;
+                totalF += m.f;
+                totalFiber += (m.fiber || 0);
+            });
+
+            // Update Nutrition Dashboard & Tab
+            document.getElementById('dash-cal-consumed').innerText = totalCal;
+            document.getElementById('dash-cal-target').innerText = appState.profile.dailyCalorieTarget;
+            const calPct = Math.min(100, (totalCal / appState.profile.dailyCalorieTarget) * 100);
+            document.getElementById('dash-cal-bar').style.width = `${calPct}%`;
+
+            document.getElementById('nut-total-cal').innerText = totalCal;
+            document.getElementById('nut-target-cal').innerText = appState.profile.dailyCalorieTarget;
+            const remainingCal = appState.profile.dailyCalorieTarget - totalCal;
+            document.getElementById('nut-remaining-cal').innerText = `${remainingCal} kcal`;
+
+            document.getElementById('macro-protein').innerText = totalP;
+            document.getElementById('macro-carbs').innerText = totalC;
+            document.getElementById('macro-fat').innerText = totalF;
+            document.getElementById('macro-fiber').innerText = totalFiber;
+
+            document.getElementById('target-protein').innerText = appState.profile.dailyProteinTarget;
+
+            // Water
+            document.getElementById('dash-water-val').innerText = log.water;
+
+            // Workout
+            if (log.workout && log.workout.length > 0) {
+                document.getElementById('dash-workout-status').innerText = `${log.workout.length} Exercises`;
+                document.getElementById('dash-workout-status').className = "text-base font-bold text-emerald-500";
+            } else {
+                document.getElementById('dash-workout-status').innerText = "Not Logged";
+                document.getElementById('dash-workout-status').className = "text-base font-bold text-gray-400";
+            }
+
+            // Speaking
+            document.getElementById('dash-speaking-min').innerText = log.speakingMins || 0;
+
+            // Render Habits Quicklist on Dashboard
+            const dashHabitsContainer = document.getElementById('dash-habits-container');
+            dashHabitsContainer.innerHTML = '';
+            appState.habits.forEach(h => {
+                const checked = log.habitsCompleted[h.id] ? true : false;
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-2 rounded-xl bg-gray-50 dark:bg-gray-800/40 text-xs";
+                div.innerHTML = `
+                    <span class="${checked ? 'line-through text-gray-400' : 'font-medium'}">${h.title}</span>
+                    <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleHabit('${h.id}')" class="w-4 h-4 accent-primary rounded cursor-pointer">
+                `;
+                dashHabitsContainer.appendChild(div);
+            });
+
+            // Daily Score calculation
+            let habitScore = appState.habits.length ? (Object.keys(log.habitsCompleted).length / appState.habits.length) : 0;
+            let calScore = Math.min(1, totalCal / appState.profile.dailyCalorieTarget);
+            let waterScore = Math.min(1, log.water / 3000);
+            let totalScore = Math.round(((habitScore + calScore + waterScore) / 3) * 100);
+
+            document.getElementById('daily-score-text').innerText = `${totalScore}%`;
+            const ring = document.getElementById('score-ring');
+            const offset = 201 - (201 * totalScore) / 100;
+            ring.style.strokeDashoffset = offset;
+
+            // Render Meals List
+            renderMealsList();
+            
+            // Render Habits Full List
+            renderHabitsFullList();
+
+            // Render Fitness Logs
+            renderFitnessLogs();
+
+            // Render Skills
+            renderSkillsList();
+
+            // Render Public Speaking Roadmap
+            renderSpeakingCurriculum();
+
+            saveState();
+        }
+
+        /* ------------------------------------------------------------------
+           6. NUTRITION LOG ACTIONS
+           ------------------------------------------------------------------ */
+        function parseAndLogNaturalFood() {
+            const input = document.getElementById('nl-food-input');
+            if (!input.value.trim()) return;
+
+            const parsed = parseNaturalLanguageFood(input.value);
+            const log = getDayLog(currentDateStr);
+            
+            log.meals.push(...parsed);
+            input.value = '';
+            showToast('Logged meal items successfully!');
+            renderAll();
+        }
+
+        function renderMealsList() {
+            const container = document.getElementById('logged-meals-list');
+            const log = getDayLog(currentDateStr);
+            container.innerHTML = '';
+
+            if (log.meals.length === 0) {
+                container.innerHTML = `<p class="text-xs text-textmuted text-center py-4">No food logged for this date yet.</p>`;
+                return;
+            }
+
+            log.meals.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "bg-cardlight dark:bg-carddark p-3 rounded-xl border border-gray-100 dark:border-gray-800 flex justify-between items-center text-xs";
+                div.innerHTML = `
+                    <div>
+                        <div class="font-bold text-textdark dark:text-textlight">${item.name}</div>
+                        <div class="text-[10px] text-textmuted">${item.qty} ${item.unit} • ${item.p}g P | ${item.c}g C | ${item.f}g F</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-primary">${item.cal} kcal</span>
+                        <button onclick="removeMeal(${index})" class="text-gray-400 hover:text-rose-500"><i class="ph ph-trash text-base"></i></button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function removeMeal(index) {
+            const log = getDayLog(currentDateStr);
+            log.meals.splice(index, 1);
+            renderAll();
+        }
+
+        function openManualFoodModal() {
+            openModal('food-modal');
+            searchFoodDatabase();
+        }
+
+        function searchFoodDatabase() {
+            const q = document.getElementById('food-search-query').value.toLowerCase();
+            const container = document.getElementById('food-search-results');
+            container.innerHTML = '';
+
+            const filtered = FOOD_DATABASE.filter(f => f.name.toLowerCase().includes(q));
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center text-xs";
+                div.innerHTML = `
+                    <div>
+                        <div class="font-bold">${item.name}</div>
+                        <div class="text-[10px] text-textmuted">${item.unit} • ${item.p}g P | ${item.c}g C | ${item.f}g F</div>
+                    </div>
+                    <button onclick="addDatabaseFood('${item.id}')" class="bg-primary text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">+ Add</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addDatabaseFood(id) {
+            const item = FOOD_DATABASE.find(f => f.id === id);
+            if (!item) return;
+
+            const log = getDayLog(currentDateStr);
+            log.meals.push({
+                name: item.name,
+                qty: 1,
+                unit: item.unit,
+                cal: item.cal,
+                p: item.p,
+                c: item.c,
+                f: item.f,
+                fiber: item.fiber || 0
+            });
+
+            closeModal('food-modal');
+            showToast(`Added ${item.name}`);
+            renderAll();
+        }
+
+        function addWater(amount) {
+            const log = getDayLog(currentDateStr);
+            log.water = (log.water || 0) + amount;
+            showToast(`+${amount}ml Water`);
+            renderAll();
+        }
+
+        /* ------------------------------------------------------------------
+           7. HABITS ENGINE
+           ------------------------------------------------------------------ */
+        function toggleHabit(habitId) {
+            const log = getDayLog(currentDateStr);
+            if (log.habitsCompleted[habitId]) {
+                delete log.habitsCompleted[habitId];
+            } else {
+                log.habitsCompleted[habitId] = true;
+            }
+            renderAll();
+        }
+
+        function renderHabitsFullList() {
+            const container = document.getElementById('habits-full-list');
+            if (!container) return;
+            const log = getDayLog(currentDateStr);
+            container.innerHTML = '';
+
+            appState.habits.forEach(h => {
+                const checked = log.habitsCompleted[h.id] ? true : false;
+                const div = document.createElement('div');
+                div.className = "bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 flex justify-between items-center text-xs shadow-sm";
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleHabit('${h.id}')" class="w-5 h-5 accent-primary rounded cursor-pointer">
+                        <div>
+                            <span class="font-bold text-sm ${checked ? 'line-through text-gray-400' : ''}">${h.title}</span>
+                            <div class="text-[10px] text-textmuted">Daily Routine Habit</div>
+                        </div>
+                    </div>
+                    <button onclick="deleteHabit('${h.id}')" class="text-gray-400 hover:text-rose-500"><i class="ph ph-trash text-lg"></i></button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function saveNewHabit() {
+            const title = document.getElementById('habit-title-input').value.trim();
+            if (!title) return;
+
+            appState.habits.push({
+                id: 'h_' + Date.now(),
+                title: title,
+                streak: 0
+            });
+
+            document.getElementById('habit-title-input').value = '';
+            closeModal('add-habit-modal');
+            showToast('New habit created!');
+            renderAll();
+        }
+
+        function deleteHabit(id) {
+            appState.habits = appState.habits.filter(h => h.id !== id);
+            renderAll();
+        }
+
+        /* ------------------------------------------------------------------
+           8. FITNESS & BODY TRACKING
+           ------------------------------------------------------------------ */
+        function saveWeightLog() {
+            const weight = parseFloat(document.getElementById('input-weight-val').value);
+            const waist = parseFloat(document.getElementById('input-waist-val').value);
+
+            const log = getDayLog(currentDateStr);
+            if (weight) log.weight = weight;
+            if (waist) log.waist = waist;
+
+            closeModal('log-weight-modal');
+            showToast('Body metrics saved!');
+            renderAll();
+        }
+
+        function saveExerciseLog() {
+            const name = document.getElementById('ex-name').value.trim();
+            const sets = parseInt(document.getElementById('ex-sets').value) || 0;
+            const reps = parseInt(document.getElementById('ex-reps').value) || 0;
+            const weight = parseFloat(document.getElementById('ex-weight').value) || 0;
+
+            if (!name) return;
+
+            const log = getDayLog(currentDateStr);
+            log.workout.push({ name, sets, reps, weight });
+
+            document.getElementById('ex-name').value = '';
+            closeModal('add-workout-modal');
+            showToast('Exercise logged!');
+            renderAll();
+        }
+
+        function saveSleepLog() {
+            const val = parseFloat(document.getElementById('sleep-hours-input').value);
+            if (val) {
+                const log = getDayLog(currentDateStr);
+                log.sleep = val;
+                showToast(`Logged ${val} hrs sleep`);
+                renderAll();
+            }
+        }
+
+        function renderFitnessLogs() {
+            const log = getDayLog(currentDateStr);
+            document.getElementById('fit-current-weight').innerText = log.weight || '--';
+            document.getElementById('fit-current-waist').innerText = log.waist || '--';
+            document.getElementById('fit-target-weight').innerText = appState.profile.targetWeight;
+
+            const container = document.getElementById('workout-exercises-list');
+            container.innerHTML = '';
+
+            if (!log.workout || log.workout.length === 0) {
+                container.innerHTML = `<p class="text-xs text-textmuted text-center py-2">No exercises logged for today.</p>`;
+                return;
+            }
+
+            log.workout.forEach((ex, idx) => {
+                const div = document.createElement('div');
+                div.className = "bg-gray-50 dark:bg-gray-800/50 p-2.5 rounded-xl flex justify-between items-center text-xs";
+                div.innerHTML = `
+                    <div>
+                        <div class="font-bold">${ex.name}</div>
+                        <div class="text-[10px] text-textmuted">${ex.sets} sets × ${ex.reps} reps ${ex.weight ? '• ' + ex.weight + ' kg' : ''}</div>
+                    </div>
+                    <button onclick="removeExercise(${idx})" class="text-gray-400 hover:text-rose-500"><i class="ph ph-trash text-base"></i></button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function removeExercise(idx) {
+            const log = getDayLog(currentDateStr);
+            log.workout.splice(idx, 1);
+            renderAll();
+        }
+
+        function renderWeightChart() {
+            const canvas = document.getElementById('weightChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            // Resize canvas for sharp render
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = 128;
+
+            // Extract weight logs sorted by date
+            const dates = Object.keys(appState.logs).sort();
+            const points = [];
+            dates.forEach(d => {
+                if (appState.logs[d].weight) {
+                    points.push(appState.logs[d].weight);
+                }
+            });
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (points.length < 2) {
+                ctx.fillStyle = "#6C688A";
+                ctx.font = "12px sans-serif";
+                ctx.fillText("Log weight on multiple dates to see trend line.", 20, 65);
+                return;
+            }
+
+            const min = Math.min(...points) - 2;
+            const max = Math.max(...points) + 2;
+
+            ctx.beginPath();
+            ctx.strokeStyle = "#6F61C0";
+            ctx.lineWidth = 3;
+
+            points.forEach((val, i) => {
+                const x = (i / (points.length - 1)) * (canvas.width - 40) + 20;
+                const y = canvas.height - 20 - ((val - min) / (max - min)) * (canvas.height - 40);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+
+            ctx.stroke();
+        }
+
+        /* ------------------------------------------------------------------
+           9. PUBLIC SPEAKING COACH
+           ------------------------------------------------------------------ */
+        const SPEECH_TOPICS = [
+            "Introduce yourself and explain your primary 365-day goal.",
+            "Explain a recent technical problem you solved in simple terms.",
+            "Pitch your favorite business or project idea in 2 minutes.",
+            "Tell a compelling story about a significant failure and what it taught you.",
+            "Convince an audience why daily discipline beats raw motivation.",
+            "Deliver a short tribute to someone who shaped your mindset."
+        ];
+
+        let speakingTimerInterval = null;
+        let speakingTimeSeconds = 0;
+        let currentFillerCount = 0;
+
+        function generateSpeechTopic() {
+            const rand = SPEECH_TOPICS[Math.floor(Math.random() * SPEECH_TOPICS.length)];
+            document.getElementById('speech-topic-text').innerText = `"${rand}"`;
+        }
+
+        function startSpeakingChallenge(mins) {
+            speakingTimeSeconds = mins * 60;
+            currentFillerCount = 0;
+            document.getElementById('filler-count').innerText = '0';
+            document.getElementById('speaking-timer-card').classList.remove('hidden');
+
+            clearInterval(speakingTimerInterval);
+            updateTimerDisplay();
+
+            speakingTimerInterval = setInterval(() => {
+                speakingTimeSeconds--;
+                updateTimerDisplay();
+                if (speakingTimeSeconds <= 0) {
+                    clearInterval(speakingTimerInterval);
+                    finishSpeakingChallenge();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(speakingTimeSeconds / 60).toString().padStart(2, '0');
+            const s = (speakingTimeSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('speech-timer-display').innerText = `${m}:${s}`;
+        }
+
+        function incrementFiller() {
+            currentFillerCount++;
+            document.getElementById('filler-count').innerText = currentFillerCount;
+        }
+
+        function finishSpeakingChallenge() {
+            clearInterval(speakingTimerInterval);
+            document.getElementById('speaking-timer-card').classList.add('hidden');
+            
+            const log = getDayLog(currentDateStr);
+            log.speakingMins = (log.speakingMins || 0) + 3;
+            log.speakingFillers = currentFillerCount;
+
+            showToast(`Practice logged! Filler words recorded: ${currentFillerCount}`);
+            renderAll();
+        }
+
+        const SPEAKING_CURRICULUM = [
+            "Month 1: Vocal Clarity, Breathing & Pacing",
+            "Month 2: Overcoming Stage Fright & Anxiety",
+            "Month 3: Structuring a Clear Speech Outline",
+            "Month 4: Masterful Body Language & Gestures",
+            "Month 5: Storytelling & Hooking Your Audience",
+            "Month 6: Impromptu Speaking & Table Topics",
+            "Month 7: Persuasive Speaking & Pitching",
+            "Month 8: Business Meetings & Executive Presence",
+            "Month 9: Humor, Tone & Audience Engagement",
+            "Month 10: Vocal Modulation & Dramatic Pauses",
+            "Month 11: Keynotes & Long-Form Presentations",
+            "Month 12: Master Speaker Graduation"
+        ];
+
+        function renderSpeakingCurriculum() {
+            const container = document.getElementById('speaking-curriculum-list');
+            if (!container) return;
+            container.innerHTML = '';
+
+            SPEAKING_CURRICULUM.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = "p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/40 flex items-center justify-between";
+                div.innerHTML = `
+                    <span class="font-medium">${item}</span>
+                    <i class="ph ph-check-circle text-primary text-base"></i>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        /* ------------------------------------------------------------------
+           10. SKILLS DEVELOPMENT
+           ------------------------------------------------------------------ */
+        function renderSkillsList() {
+            const container = document.getElementById('skills-list');
+            if (!container) return;
+            container.innerHTML = '';
+
+            appState.skills.forEach(skill => {
+                const currentHours = (skill.loggedMins / 60).toFixed(1);
+                const pct = Math.min(100, Math.round((currentHours / skill.targetHours) * 100));
+
+                const div = document.createElement('div');
+                div.className = "bg-cardlight dark:bg-carddark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-2 text-xs";
+                div.innerHTML = `
+                    <div class="flex justify-between font-bold">
+                        <span>${skill.title}</span>
+                        <span class="text-primary">${currentHours} / ${skill.targetHours} hrs</span>
+                    </div>
+                    <div class="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
+                        <div class="bg-primary h-full transition-all" style="width: ${pct}%"></div>
+                    </div>
+                    <div class="flex justify-between items-center pt-1">
+                        <span class="text-[10px] text-textmuted">${pct}% Goal Complete</span>
+                        <button onclick="addSkillMinutes('${skill.id}')" class="bg-gray-100 dark:bg-gray-800 font-semibold px-2.5 py-1 rounded-lg hover:bg-gray-200 text-[10px]">+ 30 Mins Practice</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function saveNewSkill() {
+            const title = document.getElementById('skill-title-input').value.trim();
+            const hours = parseFloat(document.getElementById('skill-target-hours').value) || 50;
+
+            if (!title) return;
+
+            appState.skills.push({
+                id: 's_' + Date.now(),
+                title: title,
+                targetHours: hours,
+                loggedMins: 0
+            });
+
+            document.getElementById('skill-title-input').value = '';
+            closeModal('add-skill-modal');
+            showToast('New skill added!');
+            renderAll();
+        }
+
+        function addSkillMinutes(id) {
+            const skill = appState.skills.find(s => s.id === id);
+            if (skill) {
+                skill.loggedMins += 30;
+                showToast(`Added +30 mins to ${skill.title}`);
+                renderAll();
+            }
+        }
+
+        /* ------------------------------------------------------------------
+           11. 365-DAY HEATMAP & BACKUP
+           ------------------------------------------------------------------ */
+        function render365Heatmap() {
+            const container = document.getElementById('heatmap-grid');
+            if (!container) return;
+            container.innerHTML = '';
+
+            for (let i = 0; i < 60; i++) {
+                const div = document.createElement('div');
+                div.className = "w-full h-4 rounded-sm bg-primary/20 hover:bg-primary transition cursor-pointer";
+                container.appendChild(div);
+            }
+        }
+
+        function exportJSONBackup() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `LevelUp365_Backup_${currentDateStr}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+            showToast('Backup JSON downloaded!');
+        }
+
+        function importJSONBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported && imported.profile) {
+                        appState = imported;
+                        saveState();
+                        renderAll();
+                        showToast('Backup successfully restored!');
+                    }
+                } catch(err) {
+                    showToast('Invalid backup JSON file.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportNutritionCSV() {
+            let csv = "Date,Calories,Protein(g),Carbs(g),Fat(g),Water(ml)\n";
+            Object.keys(appState.logs).forEach(dateKey => {
+                const log = appState.logs[dateKey];
+                let cal = 0, p = 0, c = 0, f = 0;
+                (log.meals || []).forEach(m => {
+                    cal += m.cal; p += m.p; c += m.c; f += m.f;
+                });
+                csv += `${dateKey},${cal},${p},${c},${f},${log.water || 0}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `LevelUp365_Logs_${currentDateStr}.csv`);
+            a.click();
+            showToast('CSV Report exported!');
+        }
+
+        function saveUserSettings() {
+            const cal = parseInt(document.getElementById('settings-cal-target').value);
+            const protein = parseInt(document.getElementById('settings-protein-target').value);
+            const targetWeight = parseFloat(document.getElementById('settings-target-weight').value);
+
+            if (cal) appState.profile.dailyCalorieTarget = cal;
+            if (protein) appState.profile.dailyProteinTarget = protein;
+            if (targetWeight) appState.profile.targetWeight = targetWeight;
+
+            closeModal('settings-modal');
+            showToast('Profile updated!');
+            renderAll();
+        }
+
+        /* ------------------------------------------------------------------
+           12. DATE PICKER CONTROLS
+           ------------------------------------------------------------------ */
+        function openDatePicker() {
+            const bar = document.getElementById('date-picker-bar');
+            bar.classList.toggle('hidden');
+        }
+
+        function shiftDate(offset) {
+            const d = new Date(currentDateStr);
+            d.setDate(d.getDate() + offset);
+            currentDateStr = d.toISOString().split('T')[0];
+            renderAll();
+        }
+
+        function onDateChanged(val) {
+            if (val) {
+                currentDateStr = val;
+                renderAll();
+            }
+        }
+
+        /* ------------------------------------------------------------------
+           13. INITIALIZATION ON WINDOW LOAD
+           ------------------------------------------------------------------ */
+        window.onload = function() {
+            loadState();
+            
+            // Populate settings inputs default
+            document.getElementById('settings-cal-target').value = appState.profile.dailyCalorieTarget;
+            document.getElementById('settings-protein-target').value = appState.profile.dailyProteinTarget;
+            document.getElementById('settings-target-weight').value = appState.profile.targetWeight;
+
+            renderAll();
+        };
+    </script>
+</body>
+</html>
