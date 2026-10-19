@@ -1,0 +1,21 @@
+{
+  "name": "LevelUp 365",
+  "short_name": "LevelUp365",
+  "description": "365-Day Personal Transformation & Fitness App",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F7F7FC",
+  "theme_color": "#6F61C0",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3048/3048315.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3048/3048315.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
